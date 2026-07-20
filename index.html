@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a12">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PDA Dashboard</title>
+<style>
+:root {
+  --bg-base: #0a0a12;
+  --bg-surface: #12121e;
+  --bg-card: #1a1a2e;
+  --bg-hover: #22223a;
+  --border: #2a2a44;
+  --text-primary: #e8e6f0;
+  --text-secondary: #9896a8;
+  --text-muted: #5c5a6e;
+  --accent: #6c8cff;
+  --accent-bg: rgba(108,140,255,0.12);
+  --success: #53b788;
+  --success-bg: rgba(83,183,136,0.12);
+  --warning: #e8a838;
+  --warning-bg: rgba(232,168,56,0.12);
+  --danger: #e85454;
+  --danger-bg: rgba(232,84,84,0.12);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===================== CONTROL MODE (iPad landscape) ===================== */
+#control-mode {
+  display: none;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  padding: 12px;
+  gap: 10px;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  flex-shrink: 0;
+}
+.top-bar-left { font-size: 13px; color: var(--text-secondary); }
+.top-bar-right { font-size: 13px; color: var(--text-secondary); display: flex; gap: 10px; align-items: center; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--success); display: inline-block; }
+
+.main-grid {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.button-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  flex: 0 0 50%;
+}
+
+.btn-box {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: background 0.15s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 80px;
+}
+.btn-box:active { transform: scale(0.96); }
+.btn-box-icon { font-size: 32px; line-height: 1; }
+.btn-box-label { font-size: 13px; font-weight: 600; }
+
+.btn-box.accent { background: var(--accent-bg); border-color: rgba(108,140,255,0.25); }
+.btn-box.accent .btn-box-icon, .btn-box.accent .btn-box-label { color: var(--accent); }
+.btn-box.success { background: var(--success-bg); border-color: rgba(83,183,136,0.25); }
+.btn-box.success .btn-box-icon, .btn-box.success .btn-box-label { color: var(--success); }
+.btn-box.warning { background: var(--warning-bg); border-color: rgba(232,168,56,0.25); }
+.btn-box.warning .btn-box-icon, .btn-box.warning .btn-box-label { color: var(--warning); }
+.btn-box.danger { background: var(--danger-bg); border-color: rgba(232,84,84,0.25); }
+.btn-box.danger .btn-box-icon, .btn-box.danger .btn-box-label { color: var(--danger); }
+
+.info-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.next-event-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+.next-event-name { font-size: 14px; font-weight: 600; }
+.next-event-time { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.chat-bubble {
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.quick-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.quick-action-btn {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 8px 4px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.quick-action-btn:active { background: var(--accent-bg); }
+
+.bottom-row {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: stretch;
+}
+
+.small-box {
+  flex: 1;
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  padding: 8px 4px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.small-box-icon { font-size: 20px; color: var(--text-secondary); }
+.small-box-label { font-size: 10px; color: var(--text-muted); }
+
+.mode-switch-btn {
+  background: var(--accent-bg);
+  border: 1px solid rgba(108,140,255,0.25);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+}
+
+.usage-bar-inline {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.usage-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.usage-track {
+  width: 50px;
+  height: 5px;
+  background: var(--bg-surface);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.usage-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.usage-fill.accent { background: var(--accent); }
+.usage-fill.warning { background: var(--warning); }
+
+/* ===================== INFO MODE (Blaupunkt portrait) ===================== */
+#info-mode {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 20px 16px;
+  gap: 14px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.clock-block {
+  text-align: center;
+  padding: 24px 0 8px;
+}
+.clock-time {
+  font-size: 72px;
+  font-weight: 300;
+  letter-spacing: -2px;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.clock-date {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+.clock-weather {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.cal-event {
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.cal-event:last-child { margin-bottom: 0; }
+.cal-event-name { font-size: 14px; font-weight: 600; }
+.cal-event-meta { font-size: 12px; margin-top: 2px; }
+.cal-event.past { opacity: 0.45; }
+.cal-event.next { border: 1.5px solid var(--success); background: var(--success-bg); }
+.cal-event.next .cal-event-name, .cal-event.next .cal-event-meta { color: var(--success); }
+.cal-event.future { background: var(--bg-surface); }
+
+.info-chat-bubble {
+  background: var(--bg-surface);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.usage-bar-vertical .usage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.usage-bar-vertical .usage-row:last-child { margin-bottom: 0; }
+.usage-label { font-size: 12px; color: var(--text-secondary); width: 60px; flex-shrink: 0; }
+.usage-track-lg {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.usage-pct { font-size: 12px; font-weight: 600; width: 36px; text-align: right; flex-shrink: 0; }
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+.todo-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.todo-check.done { background: var(--success); border-color: var(--success); }
+.todo-text.done { text-decoration: line-through; color: var(--text-muted); }
+
+/* ===================== FULL DASHBOARD MODE (iPad/fallback) ===================== */
+#full-mode {
+  display: none;
+  height: 100vh;
+  height: 100dvh;
+  padding: 12px;
+  gap: 10px;
+}
+#full-mode.active { display: grid; grid-template-columns: 1fr 1fr; }
+
+/* ===================== CHAT OVERLAY ===================== */
+#chat-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  z-index: 100;
+  flex-direction: column;
+  padding: 12px;
+}
+#chat-overlay.active { display: flex; }
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chat-header h2 { font-size: 16px; font-weight: 600; }
+.chat-close-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg { max-width: 85%; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 14px; line-height: 1.5; }
+.msg.user { background: var(--accent); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.ai { background: var(--bg-card); border: 1px solid var(--border); align-self: flex-start; border-bottom-left-radius: 4px; }
+
+.chat-input-row {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 10px 14px;
+  font-family: var(--font);
+  outline: none;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-input::placeholder { color: var(--text-muted); }
+.chat-send-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.chat-send-btn:disabled { opacity: 0.4; }
+
+/* ===================== SETTINGS OVERLAY ===================== */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg-base);
+  z-index: 100;
+  flex-direction: column;
+  padding: 12px;
+  overflow-y: auto;
+}
+#settings-overlay.active { display: flex; }
+
+.settings-group { margin-bottom: 20px; }
+.settings-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.settings-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  padding: 10px 14px;
+  font-family: var(--font);
+  outline: none;
+}
+.settings-input:focus { border-color: var(--accent); }
+
+.settings-save-btn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px;
+  width: 100%;
+  cursor: pointer;
+  font-family: var(--font);
+  margin-top: 10px;
+}
+
+/* ===================== RESPONSIVE ===================== */
+@media (orientation: landscape) and (max-height: 600px) {
+  #control-mode { display: flex; }
+  #info-mode { display: none; }
+}
+@media (orientation: landscape) and (min-height: 601px) {
+  #control-mode { display: flex; }
+  #info-mode { display: none; }
+}
+@media (orientation: portrait) {
+  #control-mode { display: none; }
+  #info-mode { display: flex; }
+}
+@media (orientation: landscape) and (min-width: 1000px) {
+  .button-col { flex: 0 0 45%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== CONTROL MODE (iPad landscape) ==================== -->
+<div id="control-mode">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <span id="ctrl-time">--:--</span> · <span id="ctrl-date">---</span>
+    </div>
+    <div class="top-bar-right">
+      <span id="ctrl-weather">--°C</span>
+      <span><span class="status-dot" id="tv-dot"></span> TV</span>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <div class="button-col">
+      <div class="btn-box accent" onclick="openChat()">
+        <div class="btn-box-icon">💬</div>
+        <div class="btn-box-label">Asystent</div>
+      </div>
+      <div class="btn-box success" onclick="toggleFullMode()">
+        <div class="btn-box-icon">📅</div>
+        <div class="btn-box-label">Kalendarz</div>
+      </div>
+      <div class="btn-box warning" onclick="toggleFullMode()">
+        <div class="btn-box-icon">✅</div>
+        <div class="btn-box-label">Zadania</div>
+      </div>
+      <div class="btn-box danger">
+        <div class="btn-box-icon">📞</div>
+        <div class="btn-box-label">Telefon</div>
+      </div>
+    </div>
+
+    <div class="info-col">
+      <div class="card" style="flex:1;">
+        <div class="next-event-label" id="next-event-label">Następne wydarzenie</div>
+        <div class="next-event-name" id="next-event-name">—</div>
+        <div class="next-event-time" id="next-event-time">—</div>
+      </div>
+      <div class="card" style="flex:1;">
+        <div class="card-title">💬 Asystent</div>
+        <div class="chat-bubble" id="ctrl-last-msg">Cześć! Jak mogę pomóc?</div>
+        <div class="quick-actions">
+          <button class="quick-action-btn" onclick="quickAsk('Co mam dziś w planie?')">Plan dnia</button>
+          <button class="quick-action-btn" onclick="quickAsk('Przypomnij mi o najbliższym zadaniu')">Przypomnij</button>
+          <button class="quick-action-btn" onclick="openChat()">Pytanie</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="small-box"><div class="small-box-icon">✉️</div><div class="small-box-label">Poczta</div></div>
+    <div class="small-box"><div class="small-box-icon">📷</div><div class="small-box-label">Aparat</div></div>
+    <div class="small-box"><div class="small-box-icon">📍</div><div class="small-box-label">Mapy</div></div>
+    <div class="small-box"><div class="small-box-icon">🎵</div><div class="small-box-label">Muzyka</div></div>
+    <button class="mode-switch-btn" onclick="toggleFullMode()">📊 Pełny</button>
+    <div class="small-box" onclick="openSettings()" style="cursor:pointer;">
+      <div class="small-box-icon">⚙️</div><div class="small-box-label">Ustaw.</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding: 8px 14px;">
+    <div class="usage-bar-inline">
+      <div class="usage-item">
+        Sesja
+        <div class="usage-track"><div class="usage-fill warning" id="usage-session-sm" style="width:42%"></div></div>
+        <span id="usage-session-pct-sm">42%</span>
+      </div>
+      <div class="usage-item">
+        Tydzień
+        <div class="usage-track"><div class="usage-fill accent" id="usage-week-sm" style="width:37%"></div></div>
+        <span id="usage-week-pct-sm">37%</span>
+      </div>
+      <div class="usage-item">
+        Fable
+        <div class="usage-track"><div class="usage-fill accent" style="width:0%"></div></div>
+        0%
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== INFO MODE (Blaupunkt portrait) ==================== -->
+<div id="info-mode">
+  <div class="clock-block">
+    <div class="clock-time" id="info-clock">--:--</div>
+    <div class="clock-date" id="info-date">---</div>
+    <div class="clock-weather" id="info-weather">--°C</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Dzisiaj</div>
+    <div id="info-calendar">
+      <div class="cal-event past" style="background: var(--accent-bg);">
+        <div class="cal-event-name" style="color: var(--accent);">Ładowanie...</div>
+        <div class="cal-event-meta" style="color: var(--accent);">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💬 Asystent</div>
+    <div class="info-chat-bubble" id="info-last-msg">Cześć! Jak mogę pomóc?</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Claude Pro</div>
+    <div class="usage-bar-vertical">
+      <div class="usage-row">
+        <span class="usage-label">Sesja</span>
+        <div class="usage-track-lg"><div class="usage-fill warning" id="usage-session-lg" style="width:42%"></div></div>
+        <span class="usage-pct" style="color:var(--warning)" id="usage-session-pct-lg">42%</span>
+      </div>
+      <div class="usage-row">
+        <span class="usage-label">Tydzień</span>
+        <div class="usage-track-lg"><div class="usage-fill accent" id="usage-week-lg" style="width:37%"></div></div>
+        <span class="usage-pct" style="color:var(--accent)" id="usage-week-pct-lg">37%</span>
+      </div>
+      <div class="usage-row">
+        <span class="usage-label">Fable</span>
+        <div class="usage-track-lg"><div class="usage-fill accent" style="width:0%"></div></div>
+        <span class="usage-pct" style="color:var(--text-muted)">0%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✅ Do zrobienia</div>
+    <div id="info-todos"></div>
+  </div>
+</div>
+
+<!-- ==================== CHAT OVERLAY ==================== -->
+<div id="chat-overlay">
+  <div class="chat-header">
+    <h2>💬 Asystent AI</h2>
+    <button class="chat-close-btn" onclick="closeChat()">✕ Zamknij</button>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Napisz wiadomość..." autocomplete="off">
+    <button class="chat-send-btn" id="chat-send" onclick="sendMessage()">Wyślij</button>
+  </div>
+</div>
+
+<!-- ==================== SETTINGS OVERLAY ==================== -->
+<div id="settings-overlay">
+  <div class="chat-header">
+    <h2>⚙️ Ustawienia</h2>
+    <button class="chat-close-btn" onclick="closeSettings()">✕ Zamknij</button>
+  </div>
+  <div style="padding-top: 16px;">
+    <div class="settings-group">
+      <label>Klucz API Claude</label>
+      <input class="settings-input" id="set-api-key" type="password" placeholder="sk-ant-...">
+    </div>
+    <div class="settings-group">
+      <label>Model domyślny</label>
+      <select class="settings-input" id="set-model">
+        <option value="claude-haiku-4-5-20251001">Haiku 4.5 (szybki, tani)</option>
+        <option value="claude-sonnet-4-6">Sonnet 4.6 (lepszy)</option>
+      </select>
+    </div>
+    <div class="settings-group">
+      <label>Twoje imię (personalizacja asystenta)</label>
+      <input class="settings-input" id="set-name" placeholder="np. Mikołaj">
+    </div>
+    <div class="settings-group">
+      <label>Lokalizacja (pogoda)</label>
+      <input class="settings-input" id="set-location" placeholder="np. Ożarów Mazowiecki">
+      <div style="display: flex; gap: 6px; margin-top: 6px;">
+        <input class="settings-input" id="set-lat" placeholder="Lat" style="width:50%">
+        <input class="settings-input" id="set-lon" placeholder="Lon" style="width:50%">
+      </div>
+    </div>
+    <div class="settings-group">
+      <label>Zużycie Claude Pro (ręczne)</label>
+      <div style="display: flex; gap: 6px;">
+        <input class="settings-input" id="set-usage-session" type="number" placeholder="Sesja %" style="width:50%">
+        <input class="settings-input" id="set-usage-week" type="number" placeholder="Tydzień %" style="width:50%">
+      </div>
+    </div>
+    <button class="settings-save-btn" onclick="saveSettings()">Zapisz ustawienia</button>
+
+    <div style="margin-top: 24px;">
+      <div class="card-title">✅ Zarządzaj zadaniami</div>
+      <div style="display: flex; gap: 6px; margin-top: 8px;">
+        <input class="settings-input" id="new-todo-input" placeholder="Nowe zadanie...">
+        <button class="quick-action-btn" onclick="addTodo()" style="padding: 10px 16px;">+</button>
+      </div>
+      <div id="settings-todo-list" style="margin-top: 10px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let state = {
+  apiKey: '',
+  model: 'claude-haiku-4-5-20251001',
+  name: '',
+  lat: 52.22,
+  lon: 20.63,
+  location: 'Ożarów Mazowiecki',
+  usageSession: 0,
+  usageWeek: 0,
+  todos: [],
+  chatHistory: [],
+  lastAiMsg: 'Cześć! Jak mogę pomóc?',
+  weather: { temp: null, desc: '' },
+  events: []
+};
+
+// ==================== INIT ====================
+function init() {
+  loadState();
+  updateClock();
+  setInterval(updateClock, 1000);
+  fetchWeather();
+  setInterval(fetchWeather, 30 * 60 * 1000);
+  renderTodos();
+  renderCalendar();
+  renderUsage();
+  loadSettingsForm();
+
+  document.getElementById('chat-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+
+  // Sample events for demo
+  if (state.events.length === 0) {
+    state.events = [
+      { name: 'Spotkanie drużyny', time: '10:00 – 12:00', location: 'Hufiec', status: 'past' },
+      { name: 'Sesja zdjęciowa', time: '14:00 – 16:30', location: 'Łazienki Królewskie', status: 'next' },
+      { name: 'Kolokwium', time: 'jutro 9:00', location: 'PW Gmach Główny', status: 'future' }
+    ];
+    renderCalendar();
+  }
+}
+
+// ==================== CLOCK ====================
+function updateClock() {
+  const now = new Date();
+  const time = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+  const timeSec = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const days = ['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
+  const months = ['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
+  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const dateShort = `${days[now.getDay()].slice(0,3)}. ${now.getDate()} ${months[now.getMonth()].slice(0,3)}`;
+
+  document.getElementById('ctrl-time').textContent = time;
+  document.getElementById('ctrl-date').textContent = dateShort;
+  document.getElementById('info-clock').textContent = time;
+  document.getElementById('info-date').textContent = dateStr;
+
+  if (state.weather.temp !== null) {
+    const w = `${state.weather.temp}°C · ${state.weather.desc}`;
+    document.getElementById('ctrl-weather').textContent = `${state.weather.temp}°C`;
+    document.getElementById('info-weather').textContent = `${w} · ${state.location}`;
+  }
+}
+
+// ==================== WEATHER ====================
+async function fetchWeather() {
+  try {
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${state.lat}&longitude=${state.lon}&current=temperature_2m,weather_code&timezone=Europe/Warsaw`);
+    const d = await r.json();
+    const codes = {0:'Bezchmurnie',1:'Prawie bezchmurnie',2:'Częściowe zachmurzenie',3:'Pochmurno',45:'Mgła',48:'Szadź',51:'Mżawka',53:'Mżawka',55:'Mżawka',61:'Deszcz',63:'Umiarkowany deszcz',65:'Silny deszcz',71:'Śnieg',73:'Śnieg',75:'Silny śnieg',80:'Przelotny deszcz',81:'Przelotny deszcz',82:'Ulewa',95:'Burza'};
+    state.weather = {
+      temp: Math.round(d.current.temperature_2m),
+      desc: codes[d.current.weather_code] || 'Nieznane'
+    };
+    updateClock();
+  } catch(e) { console.error('Weather error:', e); }
+}
+
+// ==================== CALENDAR ====================
+function renderCalendar() {
+  // Control mode - next event
+  const next = state.events.find(e => e.status === 'next') || state.events[0];
+  if (next) {
+    document.getElementById('next-event-name').textContent = next.name;
+    document.getElementById('next-event-time').textContent = `${next.time} · ${next.location}`;
+  }
+
+  // Info mode - all events
+  const calEl = document.getElementById('info-calendar');
+  calEl.innerHTML = state.events.map(ev => {
+    const cls = ev.status === 'past' ? 'past' : ev.status === 'next' ? 'next' : 'future';
+    const style = ev.status === 'past' ? 'background:var(--accent-bg);' : '';
+    const nameColor = ev.status === 'past' ? 'color:var(--accent)' : ev.status === 'future' ? 'color:var(--text-primary)' : '';
+    const metaColor = ev.status === 'past' ? 'color:var(--accent)' : ev.status === 'future' ? 'color:var(--text-secondary)' : '';
+    return `<div class="cal-event ${cls}" style="${style}">
+      <div class="cal-event-name" style="${nameColor}">${ev.name}</div>
+      <div class="cal-event-meta" style="${metaColor}">${ev.time} · ${ev.location}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== TODOS ====================
+function renderTodos() {
+  // Info mode
+  const infoEl = document.getElementById('info-todos');
+  infoEl.innerHTML = state.todos.map((t, i) => `
+    <div class="todo-item">
+      <div class="todo-check ${t.done ? 'done' : ''}" onclick="toggleTodo(${i})">
+        ${t.done ? '✓' : ''}
+      </div>
+      <span class="todo-text ${t.done ? 'done' : ''}">${t.text}</span>
+    </div>
+  `).join('') || '<div style="font-size:13px;color:var(--text-muted)">Brak zadań</div>';
+
+  // Settings
+  const setEl = document.getElementById('settings-todo-list');
+  if (setEl) {
+    setEl.innerHTML = state.todos.map((t, i) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+        <span style="flex:1;font-size:13px;${t.done?'text-decoration:line-through;color:var(--text-muted)':''}">${t.text}</span>
+        <button class="quick-action-btn" onclick="removeTodo(${i})" style="flex:0;padding:4px 10px;color:var(--danger)">✕</button>
+      </div>
+    `).join('');
+  }
+}
+
+function toggleTodo(i) {
+  state.todos[i].done = !state.todos[i].done;
+  saveState();
+  renderTodos();
+}
+
+function addTodo() {
+  const inp = document.getElementById('new-todo-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  state.todos.push({ text, done: false });
+  inp.value = '';
+  saveState();
+  renderTodos();
+}
+
+function removeTodo(i) {
+  state.todos.splice(i, 1);
+  saveState();
+  renderTodos();
+}
+
+// ==================== USAGE ====================
+function renderUsage() {
+  const s = state.usageSession;
+  const w = state.usageWeek;
+
+  document.getElementById('usage-session-sm').style.width = s + '%';
+  document.getElementById('usage-session-pct-sm').textContent = s + '%';
+  document.getElementById('usage-week-sm').style.width = w + '%';
+  document.getElementById('usage-week-pct-sm').textContent = w + '%';
+
+  document.getElementById('usage-session-lg').style.width = s + '%';
+  document.getElementById('usage-session-pct-lg').textContent = s + '%';
+  document.getElementById('usage-week-lg').style.width = w + '%';
+  document.getElementById('usage-week-pct-lg').textContent = w + '%';
+}
+
+// ==================== CHAT ====================
+function openChat() {
+  document.getElementById('chat-overlay').classList.add('active');
+  renderChatHistory();
+  document.getElementById('chat-input').focus();
+}
+
+function closeChat() {
+  document.getElementById('chat-overlay').classList.remove('active');
+}
+
+function renderChatHistory() {
+  const el = document.getElementById('chat-messages');
+  if (state.chatHistory.length === 0) {
+    el.innerHTML = '<div class="msg ai">Cześć! Jestem Twoim asystentem. Napisz cokolwiek — pomogę z planem dnia, zadaniami, notatkami.</div>';
+    return;
+  }
+  el.innerHTML = state.chatHistory.map(m => `<div class="msg ${m.role === 'user' ? 'user' : 'ai'}">${escHtml(m.content)}</div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+async function sendMessage() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+
+  state.chatHistory.push({ role: 'user', content: text });
+  renderChatHistory();
+
+  if (!state.apiKey) {
+    const noKey = 'Brak klucza API — wpisz go w ustawieniach (⚙️), żebym mógł odpowiadać.';
+    state.chatHistory.push({ role: 'assistant', content: noKey });
+    state.lastAiMsg = noKey;
+    updateLastMsg();
+    renderChatHistory();
+    return;
+  }
+
+  document.getElementById('chat-send').disabled = true;
+
+  try {
+    const systemPrompt = `Jesteś osobistym asystentem${state.name ? ' użytkownika ' + state.name : ''}. Odpowiadaj krótko, po polsku. Pomagasz z planem dnia, zadaniami, notatkami, i szybkimi pytaniami. Bądź konkretny i zwięzły.`;
+
+    const messages = state.chatHistory.map(m => ({ role: m.role, content: m.content }));
+
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': state.apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: state.model, max_tokens: 1024, system: systemPrompt, messages })
+    });
+
+    const d = await r.json();
+
+    if (d.error) {
+      const errMsg = `Błąd API: ${d.error.message}`;
+      state.chatHistory.push({ role: 'assistant', content: errMsg });
+      state.lastAiMsg = errMsg;
+    } else {
+      const reply = d.content.map(c => c.text || '').join('');
+      state.chatHistory.push({ role: 'assistant', content: reply });
+      state.lastAiMsg = reply;
+    }
+  } catch(e) {
+    const errMsg = `Błąd połączenia: ${e.message}`;
+    state.chatHistory.push({ role: 'assistant', content: errMsg });
+    state.lastAiMsg = errMsg;
+  }
+
+  document.getElementById('chat-send').disabled = false;
+  updateLastMsg();
+  renderChatHistory();
+  saveState();
+
+  // Increment usage estimate
+  state.usageSession = Math.min(100, state.usageSession + 2);
+  renderUsage();
+}
+
+function quickAsk(text) {
+  openChat();
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function updateLastMsg() {
+  const short = state.lastAiMsg.length > 120 ? state.lastAiMsg.slice(0, 120) + '...' : state.lastAiMsg;
+  document.getElementById('ctrl-last-msg').textContent = short;
+  document.getElementById('info-last-msg').textContent = state.lastAiMsg;
+}
+
+// ==================== SETTINGS ====================
+function openSettings() {
+  document.getElementById('settings-overlay').classList.add('active');
+  loadSettingsForm();
+  renderTodos();
+}
+
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('active');
+}
+
+function loadSettingsForm() {
+  document.getElementById('set-api-key').value = state.apiKey;
+  document.getElementById('set-model').value = state.model;
+  document.getElementById('set-name').value = state.name;
+  document.getElementById('set-location').value = state.location;
+  document.getElementById('set-lat').value = state.lat;
+  document.getElementById('set-lon').value = state.lon;
+  document.getElementById('set-usage-session').value = state.usageSession || '';
+  document.getElementById('set-usage-week').value = state.usageWeek || '';
+}
+
+function saveSettings() {
+  state.apiKey = document.getElementById('set-api-key').value.trim();
+  state.model = document.getElementById('set-model').value;
+  state.name = document.getElementById('set-name').value.trim();
+  state.location = document.getElementById('set-location').value.trim();
+  state.lat = parseFloat(document.getElementById('set-lat').value) || 52.22;
+  state.lon = parseFloat(document.getElementById('set-lon').value) || 20.63;
+  const us = parseInt(document.getElementById('set-usage-session').value);
+  const uw = parseInt(document.getElementById('set-usage-week').value);
+  if (!isNaN(us)) state.usageSession = Math.max(0, Math.min(100, us));
+  if (!isNaN(uw)) state.usageWeek = Math.max(0, Math.min(100, uw));
+
+  saveState();
+  renderUsage();
+  fetchWeather();
+  closeSettings();
+}
+
+// ==================== MODE SWITCHING ====================
+function toggleFullMode() {
+  // For now just show info mode overlay (future: Stage Manager)
+  const ctrl = document.getElementById('control-mode');
+  const info = document.getElementById('info-mode');
+  if (ctrl.style.display !== 'none' && window.innerWidth > window.innerHeight) {
+    ctrl.style.display = 'none';
+    info.style.display = 'flex';
+    info.style.maxWidth = '100%';
+  } else {
+    ctrl.style.display = 'flex';
+    info.style.display = 'none';
+  }
+}
+
+// ==================== PERSISTENCE ====================
+function saveState() {
+  try {
+    const s = { ...state };
+    delete s.weather;
+    localStorage.setItem('pda-state', JSON.stringify(s));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('pda-state'));
+    if (s) {
+      state = { ...state, ...s, weather: state.weather };
+    }
+  } catch(e) {}
+}
+
+// ==================== START ====================
+init();
+</script>
+</body>
+</html>
